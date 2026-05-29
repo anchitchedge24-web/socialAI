@@ -14,3 +14,7 @@ temp_downloads/
 .gitignore
 README.md
 cookies.txt
+requirements-local.txt
+test_*.py
+*.gguf
+*.bin

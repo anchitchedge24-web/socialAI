@@ -6,6 +6,7 @@ import VideoCard from './components/VideoCard/VideoCard';
 import SkeletonCard from './components/VideoCard/SkeletonCard';
 import ChatPanel from './components/Chat/ChatPanel';
 import ToastContainer from './components/UI/Toast';
+import DeploymentBanner from './components/UI/DeploymentBanner';
 import useAppStore from './store/appStore';
 
 export default function App() {
@@ -44,6 +45,9 @@ export default function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        {/* Deployment notice (only shows on hosted version) */}
+        <DeploymentBanner />
+
         {/* Input Form */}
         <VideoInputForm />
 
@@ -82,7 +86,7 @@ export default function App() {
       {/* Footer */}
       <footer className="border-t border-white/5 mt-12">
         <div className="max-w-7xl mx-auto px-6 py-6 text-center text-xs text-gray-600">
-          Built with FastAPI • React • ChromaDB • LangGraph • Llama
+          Built with FastAPI · React · ChromaDB · Groq · BGE Embeddings
         </div>
       </footer>
     </div>

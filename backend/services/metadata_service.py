@@ -3,7 +3,7 @@ from typing import Tuple
 from models.video_metadata import VideoMetadata
 from services.youtube_service import YouTubeService
 from services.instagram_service import InstagramService
-from services.transcript_service import TranscriptService
+from services.transcript_service import TranscriptService, WHISPER_AVAILABLE
 from services.engagement_service import EngagementService
 from config.settings import get_settings
 
@@ -27,7 +27,8 @@ class MetadataService:
         video_b = await self.instagram_service.extract_metadata(instagram_url)
         video_b.video_id = "B"
 
-        if not video_b.transcript_available:
+        # Try Whisper transcription for Instagram only if available (local only)
+        if not video_b.transcript_available and WHISPER_AVAILABLE:
             logger.info("Attempting Instagram video download for transcription...")
             video_path = await self.instagram_service.download_video(instagram_url)
             if video_path:
@@ -35,22 +36,27 @@ class MetadataService:
                 if transcript:
                     video_b.transcript = transcript
                     video_b.transcript_available = True
-                    logger.info("Instagram transcription successful")
+                    logger.info("✅ Instagram transcription successful")
 
                 try:
                     import os
                     os.remove(video_path)
                 except Exception:
                     pass
+        elif not video_b.transcript_available and not WHISPER_AVAILABLE:
+            logger.info("⚠️ Whisper not available in production — using description as transcript")
 
+        # Use description/caption as transcript fallback for Instagram
         if not video_b.transcript_available:
-            video_b.transcript = (
-                "This is an Instagram reel about trending content. "
-                "The creator shares engaging visual content with their audience. "
-                "The reel features dynamic editing and creative storytelling techniques."
+            fallback_text = video_b.description or (
+                f"This is an Instagram reel by {video_b.creator_name} "
+                f"with {video_b.views:,} views, {video_b.likes:,} likes, "
+                f"and {video_b.comments:,} comments. The creator shares engaging visual content "
+                f"with their audience using dynamic editing and creative storytelling."
             )
+            video_b.transcript = fallback_text
             video_b.transcript_available = True
-            logger.info("Used fallback transcript for Instagram")
+            logger.info("Used description/fallback as transcript for Instagram")
 
         self.engagement_service.compute_engagement(video_a)
         self.engagement_service.compute_engagement(video_b)

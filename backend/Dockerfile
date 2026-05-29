@@ -8,10 +8,12 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+# Pin pip + setuptools FIRST to avoid pkg_resources issue
+RUN pip install --no-cache-dir --upgrade "pip==24.0" "setuptools==69.0.3" "wheel==0.42.0"
+
 # Copy requirements first (better Docker layer caching)
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application
 COPY . .
@@ -19,6 +21,8 @@ COPY . .
 # Create data directories
 RUN mkdir -p chroma_data temp_downloads
 
-EXPOSE 8000
+# Render uses PORT env var
+ENV PORT=10000
+EXPOSE 10000
 
 CMD ["python", "main.py"]
