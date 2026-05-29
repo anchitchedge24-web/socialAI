@@ -28,18 +28,23 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     logger.info("Starting Social Media RAG Chatbot Backend...")
 
-    # Decode Instagram cookies from env var if provided (for cloud deployment)
+    # 🔥 Decode Instagram cookies from env var (for cloud deployment)
     cookies_b64 = os.getenv("INSTAGRAM_COOKIES_BASE64")
     if cookies_b64:
         import base64
         try:
             cookies_content = base64.b64decode(cookies_b64).decode("utf-8")
-            with open("./cookies.txt", "w") as f:
+            cookies_path = "/app/cookies.txt"
+            with open(cookies_path, "w") as f:
                 f.write(cookies_content)
-            os.environ["INSTAGRAM_COOKIES_FILE"] = "./cookies.txt"
-            logger.info("✅ Instagram cookies loaded from env variable")
+            os.environ["INSTAGRAM_COOKIES_FILE"] = cookies_path
+            # CRITICAL: unset browser-based cookies so file-based is used
+            os.environ.pop("INSTAGRAM_COOKIES_BROWSER", None)
+            logger.info(f"✅ Instagram cookies loaded from env variable ({len(cookies_content)} bytes)")
         except Exception as e:
-            logger.error(f"Failed to decode cookies: {e}")
+            logger.error(f"❌ Failed to decode Instagram cookies: {e}")
+    else:
+        logger.warning("⚠️ INSTAGRAM_COOKIES_BASE64 not set — Instagram extraction will fail in production")
 
     logger.info(f"ChromaDB persist dir: {settings.CHROMA_PERSIST_DIR}")
     logger.info(f"Embedding model: {settings.EMBEDDING_MODEL}")
@@ -47,7 +52,6 @@ async def lifespan(app: FastAPI):
     os.makedirs("./temp_downloads", exist_ok=True)
     yield
     logger.info("Shutting down...")
-
 
 app = FastAPI(
     title="Social Media RAG Chatbot",

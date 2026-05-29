@@ -13,17 +13,13 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 TEMP_DIR = "./temp_downloads"
-COOKIES_BROWSER = os.getenv("INSTAGRAM_COOKIES_BROWSER", "chrome")
-COOKIES_FILE = os.getenv("INSTAGRAM_COOKIES_FILE", "")
 
-# Instagram mobile user agent (works better than desktop for scraping)
+# Instagram mobile user agent
 INSTAGRAM_UA = (
     "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) "
     "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"
 )
 
-# Average like-to-view ratio for Instagram Reels (used for estimation)
-# Industry data: viral reels ~7-12%, normal ~3-5%, we use 8% as midpoint
 LIKE_TO_VIEW_RATIO = 0.08
 
 
@@ -36,25 +32,35 @@ class InstagramService:
         )
 
     def _build_auth_args(self) -> list:
-        """Build yt-dlp authentication arguments."""
-        if COOKIES_FILE and os.path.exists(COOKIES_FILE):
-            logger.info(f"🍪 Using cookies file: {COOKIES_FILE}")
-            return ["--cookies", COOKIES_FILE]
+        """Build yt-dlp authentication arguments. PREFERS file over browser."""
+        # ALWAYS check env vars fresh (they may be set after import)
+        cookies_file = os.getenv("INSTAGRAM_COOKIES_FILE", "")
+        cookies_browser = os.getenv("INSTAGRAM_COOKIES_BROWSER", "")
+
+        # Prefer cookies file (works on cloud)
+        if cookies_file and os.path.exists(cookies_file):
+            logger.info(f"🍪 Using cookies file: {cookies_file}")
+            return ["--cookies", cookies_file]
+        elif cookies_browser:
+            logger.info(f"🍪 Using cookies from browser: {cookies_browser}")
+            return ["--cookies-from-browser", cookies_browser]
         else:
-            logger.info(f"🍪 Using cookies from browser: {COOKIES_BROWSER}")
-            return ["--cookies-from-browser", COOKIES_BROWSER]
+            logger.warning("⚠️ No Instagram cookies configured — extraction will likely fail")
+            return []
 
     def _build_cookie_dict(self) -> dict:
         """Build cookie dictionary for httpx requests."""
-        if COOKIES_FILE and os.path.exists(COOKIES_FILE):
+        cookies_file = os.getenv("INSTAGRAM_COOKIES_FILE", "")
+        if cookies_file and os.path.exists(cookies_file):
             try:
                 from http.cookiejar import MozillaCookieJar
                 jar = MozillaCookieJar()
-                jar.load(COOKIES_FILE, ignore_discard=True, ignore_expires=True)
+                jar.load(cookies_file, ignore_discard=True, ignore_expires=True)
                 return {cookie.name: cookie.value for cookie in jar}
             except Exception as e:
                 logger.warning(f"⚠️ Failed to load cookies from file: {e}")
         return {}
+
 
     @staticmethod
     def _format_upload_date(raw_date: str) -> str:

@@ -5,7 +5,7 @@
 !.env.example
 cookies.txt
 *.cookies.txt
-
+cookies_base64.txt
 # Python
 __pycache__/
 *.py[cod]
