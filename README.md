@@ -1,4 +1,4 @@
-# SocialRAG
+#SocialRAG
 
 Compare a YouTube video and an Instagram Reel side by side, then ask an LLM questions about them. Built this as a take-home project to play around with RAG pipelines and local LLMs.
 
@@ -391,5 +391,6 @@ SSE is one-way (server → client), which is all we need. Simpler protocol, auto
 
 ## License
 
-MIT. Do whatever.#   s o c i a l A I  
+MIT. Do whatever.#   s o c i a l A I 
+ 
  
