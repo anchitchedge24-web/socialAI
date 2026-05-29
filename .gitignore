@@ -1,0 +1,39 @@
+# Environment & Secrets
+.env
+.env.local
+*.env
+!.env.example
+cookies.txt
+*.cookies.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+backend/venv/
+
+# Backend data
+backend/chroma_data/
+backend/temp_downloads/
+backend/models/
+backend/logs/
+*.gguf
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+.cache/
+.huggingface/
