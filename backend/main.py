@@ -80,11 +80,13 @@ app.include_router(health_router, prefix="/api", tags=["Health"])
 app.include_router(analyze_router, prefix="/api", tags=["Analysis"])
 app.include_router(chat_router, prefix="/api", tags=["Chat"])
 
+# This block runs ONLY for local development (python main.py)
+# Production uses uvicorn CLI directly via Dockerfile CMD
 if __name__ == "__main__":
     port = int(os.getenv("PORT", settings.PORT))
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=port,
-        reload=False,  # MUST be False in production
+        reload=False,
     )

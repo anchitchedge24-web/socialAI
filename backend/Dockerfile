@@ -21,11 +21,13 @@ COPY . .
 # Create data directories
 RUN mkdir -p chroma_data temp_downloads
 
-# 🔥 CRITICAL FIX: Set PYTHONPATH so absolute imports work
+# Set PYTHONPATH so all nested imports work
 ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
 ENV PORT=10000
 
 EXPOSE 10000
 
-# Use exec form + explicit module path
-CMD ["python", "-u", "main.py"]
+# 🔥 CRITICAL: Use uvicorn CLI directly (NOT python main.py)
+# This ensures Python's module system treats /app as the package root
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000}"]
