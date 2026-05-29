@@ -21,8 +21,11 @@ COPY . .
 # Create data directories
 RUN mkdir -p chroma_data temp_downloads
 
-# Render uses PORT env var
+# 🔥 CRITICAL FIX: Set PYTHONPATH so absolute imports work
+ENV PYTHONPATH=/app
 ENV PORT=10000
+
 EXPOSE 10000
 
-CMD ["python", "main.py"]
+# Use exec form + explicit module path
+CMD ["python", "-u", "main.py"]
