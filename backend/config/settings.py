@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "llama3.2:3b"
 
-    # Groq (cloud)
+    # Groq
     GROQ_API_KEY: str = ""
     GROQ_MODEL: str = "llama-3.3-70b-versatile"
     GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE: float = 0.7
     LLM_CONTEXT_LENGTH: int = 4096
     LLM_MODEL_PATH: str = "./models/llama-2-7b-chat.Q4_K_M.gguf"
+
+    # 🔥 NEW: YouTube Data API
+    YOUTUBE_API_KEY: str = ""
 
     # Embeddings
     EMBEDDING_MODEL: str = "BAAI/bge-small-en-v1.5"
