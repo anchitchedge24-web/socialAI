@@ -1,5 +1,10 @@
-import uvicorn
+import sys
 import os
+
+# Ensure the backend directory is in sys.path for absolute imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -22,6 +27,20 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting Social Media RAG Chatbot Backend...")
+
+    # Decode Instagram cookies from env var if provided (for cloud deployment)
+    cookies_b64 = os.getenv("INSTAGRAM_COOKIES_BASE64")
+    if cookies_b64:
+        import base64
+        try:
+            cookies_content = base64.b64decode(cookies_b64).decode("utf-8")
+            with open("./cookies.txt", "w") as f:
+                f.write(cookies_content)
+            os.environ["INSTAGRAM_COOKIES_FILE"] = "./cookies.txt"
+            logger.info("✅ Instagram cookies loaded from env variable")
+        except Exception as e:
+            logger.error(f"Failed to decode cookies: {e}")
+
     logger.info(f"ChromaDB persist dir: {settings.CHROMA_PERSIST_DIR}")
     logger.info(f"Embedding model: {settings.EMBEDDING_MODEL}")
     os.makedirs(settings.CHROMA_PERSIST_DIR, exist_ok=True)
@@ -37,24 +56,21 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Get frontend URLs from env (comma-separated)
+# CORS configuration
 allowed_origins = [
     settings.FRONTEND_URL,
     "http://localhost:5173",
     "http://localhost:3000",
 ]
 
-# Add production frontend URL if set
 prod_frontend = os.getenv("PROD_FRONTEND_URL")
 if prod_frontend:
     allowed_origins.append(prod_frontend)
-    # Also add the vercel preview URLs pattern
-    allowed_origins.append("https://*.vercel.app")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_origin_regex=r"https://.*\.vercel\.app",  # Allow all Vercel preview URLs
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
