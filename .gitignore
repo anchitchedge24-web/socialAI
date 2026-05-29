@@ -17,7 +17,6 @@ backend/venv/
 # Backend data
 backend/chroma_data/
 backend/temp_downloads/
-backend/models/
 backend/logs/
 *.gguf
 
